@@ -1,6 +1,13 @@
-﻿@inherits LayoutComponentBase
+﻿@using GitHubExplorer.Web.Components.Shared
+@inherits LayoutComponentBase
 
-@Body
+<nav class="topbar">
+    <NavLink href="" Match="NavLinkMatch.All">Cerca</NavLink>
+    <NavLink href="favorites">Preferiti</NavLink>
+</nav>
+
+<main class="content">@Body</main>
+<Toast />
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.

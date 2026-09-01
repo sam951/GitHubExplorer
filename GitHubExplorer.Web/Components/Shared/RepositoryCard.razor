@@ -1,0 +1,19 @@
+﻿<div class="repo-card">
+    <div class="repo-head">
+        <a href="@HtmlUrl" target="_blank" rel="noopener noreferrer">@FullName</a>
+        <span class="stars">★ @Stars</span>
+    </div>
+    @if (!string.IsNullOrWhiteSpace(Description))
+    {
+        <p class="desc">@Description</p>
+    }
+    <div class="repo-actions">@ChildContent</div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string FullName { get; set; } = "";
+    [Parameter, EditorRequired] public string HtmlUrl { get; set; } = "";
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public int Stars { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

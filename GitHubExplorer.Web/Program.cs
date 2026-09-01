@@ -1,10 +1,25 @@
+using GitHubExplorer.Web.ApiClients;
 using GitHubExplorer.Web.Components;
+using GitHubExplorer.Web.Services;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.Configure<ApiOptions>(builder.Configuration.GetSection("Api"));
+builder.Services.AddTransient<ApiKeyHandler>();
+
+builder.Services.AddHttpClient<IGitHubExplorerApiClient, GitHubExplorerApiClient>((sp, http) =>
+{
+    var opt = sp.GetRequiredService<IOptions<ApiOptions>>().Value;
+    http.BaseAddress = new Uri(opt.BaseUrl);
+})
+.AddHttpMessageHandler<ApiKeyHandler>();
+
+builder.Services.AddScoped<ToastService>();
 
 var app = builder.Build();
 

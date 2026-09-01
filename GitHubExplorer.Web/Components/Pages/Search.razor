@@ -1,0 +1,89 @@
+﻿@page "/"
+@using GitHubExplorer.Web.Components.Shared
+@inject IGitHubExplorerApiClient Api
+@inject ToastService Toasts
+
+<h1>Cerca repository</h1>
+
+<div class="search-bar">
+    <input @bind="query" @bind:event="oninput" @onkeyup="OnKeyUp"
+           placeholder="Cerca su GitHub… (es. blazor)" />
+    <button @onclick="SearchAsync" disabled="@loading">Cerca</button>
+</div>
+
+@if (loading)
+{
+    <Spinner />
+}
+else if (error is not null)
+{
+    <p class="error">@error</p>
+}
+else if (results is not null)
+{
+    @if (results.Count == 0)
+    {
+        <p>Nessun risultato per «@lastQuery».</p>
+    }
+    else
+    {
+        @foreach (var repo in results)
+        {
+            <RepositoryCard FullName="@repo.FullName" HtmlUrl="@repo.HtmlUrl"
+                      Description="@repo.Description" Stars="repo.Stars">
+                <button @onclick="() => Add(repo)">★ Aggiungi ai preferiti</button>
+            </RepositoryCard>
+        }
+    }
+}
+
+@code {
+    private string query = "";
+    private string lastQuery = "";
+    private IReadOnlyList<RepositoryDto>? results;
+    private bool loading;
+    private string? error;
+
+    private async Task SearchAsync()
+    {
+        if (string.IsNullOrWhiteSpace(query)) return;
+        loading = true; error = null; lastQuery = query;
+        try
+        {
+            results = await Api.SearchAsync(query, CancellationToken.None);
+        }
+        catch
+        {
+            error = "Errore durante la ricerca. Riprova.";
+            results = null;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task OnKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await SearchAsync();
+    }
+
+    private async Task Add(RepositoryDto repo)
+    {
+        var req = new CreateFavoriteRequest(
+            repo.GithubId, repo.Name, repo.FullName, repo.Owner,
+            repo.HtmlUrl, repo.Description, repo.Stars, Note: null);
+        try
+        {
+            var added = await Api.AddFavoriteAsync(req, CancellationToken.None);
+            if (added)
+                Toasts.ShowSuccess($"«{repo.FullName}» aggiunto ai preferiti.");
+            else
+                Toasts.ShowInfo($"«{repo.FullName}» è già nei preferiti.");
+        }
+        catch
+        {
+            Toasts.ShowError("Impossibile aggiungere il preferito. Riprova.");
+        }
+    }
+}

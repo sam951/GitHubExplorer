@@ -1,0 +1,84 @@
+﻿@page "/favorites"
+@using GitHubExplorer.Web.Components.Shared
+@inject IGitHubExplorerApiClient Api
+@inject ToastService Toasts
+
+<h1>Preferiti</h1>
+
+@if (loading)
+{
+    <Spinner />
+}
+else if (error is not null)
+{
+    <p class="error">@error</p>
+}
+else if (favorites is not null)
+{
+    @if (favorites.Count == 0)
+    {
+        <p>Nessun preferito. Vai su <a href="">Cerca</a> per aggiungerne.</p>
+    }
+    else
+    {
+        @foreach (var fav in favorites)
+        {
+            <RepositoryCard FullName="@fav.FullName" HtmlUrl="@fav.HtmlUrl"
+                            Description="@fav.Description" Stars="fav.Stars">
+                <div class="fav-note">
+                    <textarea @bind="noteDrafts[fav.Id]" placeholder="Nota personale…"></textarea>
+                    <button @onclick="() => SaveNote(fav)">Salva nota</button>
+                </div>
+                <button class="danger" @onclick="() => Delete(fav)">Elimina</button>
+            </RepositoryCard>
+        }
+    }
+}
+
+@code {
+    private IReadOnlyList<FavoriteDto>? favorites;
+    private Dictionary<int, string?> noteDrafts = new();
+    private bool loading;
+    private string? error;
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private async Task Load()
+    {
+        loading = true; error = null;
+        try
+        {
+            favorites = await Api.GetFavoritesAsync(CancellationToken.None);
+            noteDrafts = favorites.ToDictionary(f => f.Id, f => f.Note);
+        }
+        catch
+        {
+            error = "Impossibile caricare i preferiti.";
+            favorites = null;
+        }
+        finally { loading = false; }
+    }
+
+    private async Task SaveNote(FavoriteDto fav)
+    {
+        try
+        {
+            var ok = await Api.UpdateNoteAsync(fav.Id, noteDrafts[fav.Id], CancellationToken.None);
+            if (ok) Toasts.ShowSuccess("Nota salvata.");
+            else { Toasts.ShowInfo("Preferito non più presente, aggiorno."); await Load(); }
+        }
+        catch { Toasts.ShowError("Errore nel salvataggio della nota."); }
+    }
+
+    private async Task Delete(FavoriteDto fav)
+    {
+        try
+        {
+            var ok = await Api.DeleteFavoriteAsync(fav.Id, CancellationToken.None);
+            if (ok) Toasts.ShowSuccess($"«{fav.FullName}» rimosso.");
+            else Toasts.ShowInfo("Preferito già rimosso.");
+            await Load();
+        }
+        catch { Toasts.ShowError("Errore durante l'eliminazione."); }
+    }
+}
