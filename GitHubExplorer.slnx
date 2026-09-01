@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="GitHubExplorer.Api/GitHubExplorer.Api.csproj" />
+  <Project Path="GitHubExplorer.Contracts/GitHubExplorer.Contracts.csproj" />
+  <Project Path="GitHubExplorer.Tests/GitHubExplorer.Tests.csproj" />
+  <Project Path="GitHubExplorer.Web/GitHubExplorer.Web.csproj" />
+</Solution>
