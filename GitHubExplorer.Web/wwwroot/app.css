@@ -350,3 +350,28 @@ h1:focus {
 .blazor-error-boundary::after {
     content: "An error has occurred."
 }
+
+/* Mobile */
+@media (max-width: 640px) {
+    .topbar {
+        padding: .75rem 1rem;
+    }
+
+    .nav-links {
+        position: static;
+        transform: none;
+        margin-left: auto;
+    }
+
+    .search-bar {
+        flex-wrap: wrap;
+    }
+
+    .search-bar input {
+        flex: 1 1 100%;
+    }
+
+    .sort-select {
+        flex: 1 1 auto;
+    }
+}

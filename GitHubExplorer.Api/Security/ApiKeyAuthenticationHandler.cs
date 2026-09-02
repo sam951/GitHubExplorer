@@ -21,18 +21,18 @@ public sealed class ApiKeyAuthenticationHandler : AuthenticationHandler<Authenti
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        // Scenario 1: header assente → nessuna credenziale fornita
+        // header assente: nessuna credenziale da validare
         if (!Request.Headers.TryGetValue(_apiKeyOptions.HeaderName, out var provided) || string.IsNullOrWhiteSpace(provided))
             return Task.FromResult(AuthenticateResult.NoResult());
 
-        // Scenario 2: header presente ma chiave sbagliata → fallimento
+        // chiave presente ma non valida
         var providedKey = Encoding.UTF8.GetBytes(provided.ToString());
         var expectedKey = Encoding.UTF8.GetBytes(_apiKeyOptions.Key);
 
         if (!CryptographicOperations.FixedTimeEquals(providedKey, expectedKey))
             return Task.FromResult(AuthenticateResult.Fail("API Key non valida."));
 
-        // Scenario 3: chiave giusta → identità autenticata
+        // chiave valida, creo l'identità
         var claims = new[] { new Claim(ClaimTypes.Name, "ApiKeyClient") };
         var identity = new ClaimsIdentity(claims, Scheme.Name);
         var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme.Name);
