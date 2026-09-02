@@ -11,6 +11,8 @@ namespace GitHubExplorer.Api.Controllers;
 [Authorize]
 public sealed class RepositoriesController : ControllerBase
 {
+    private static readonly string[] AllowedSorts = { "stars", "forks", "help-wanted-issues", "updated" };
+
     private readonly IGitHubClient _gitHub;
 
     public RepositoriesController(IGitHubClient gitHub) => _gitHub = gitHub;
@@ -20,6 +22,7 @@ public sealed class RepositoriesController : ControllerBase
         [FromQuery] string q, 
         [FromQuery] int page = 1, 
         [FromQuery] int perPage = 10, 
+        [FromQuery] string? sort = null,
         CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(q))
@@ -27,8 +30,9 @@ public sealed class RepositoriesController : ControllerBase
 
         page = Math.Max(1, page);
         perPage = Math.Clamp(perPage, 1, 100);
+        if (sort is not null && !AllowedSorts.Contains(sort)) sort = null;
 
-        var results = await _gitHub.SearchRepositoriesAsync(q, page, perPage, ct);
+        var results = await _gitHub.SearchRepositoriesAsync(q, page, perPage, sort, ct);
         return Ok(results);
     }
 }

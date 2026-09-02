@@ -9,8 +9,17 @@
 <div class="search-bar">
     <input @bind="query" @bind:event="oninput" @onkeyup="OnKeyUp"
            placeholder="Cerca su GitHub… (es. blazor)" />
+    <select @bind="sort" @bind:after="OnSortChanged" class="sort-select">
+        <option value="">Più rilevanti</option>
+        <option value="stars">Più stelle</option>
+        <option value="updated">Aggiornati di recente</option>
+        <option value="forks">Più fork</option>
+    </select>
     <button @onclick="NewSearch" disabled="@loading">Cerca</button>
 </div>
+<p class="search-hint">
+    Puoi combinare i qualificatori di GitHub in un'unica query, es. <code>blazor in:name language:c# stars:&gt;1000</code>.
+</p>
 
 @if (loading)
 {
@@ -52,6 +61,7 @@ else if (results is not null)
     private bool loading;
     private string? error;
     private int selectedPage = 1;
+    private string sort = "";
 
     private readonly CancellationTokenSource _cts = new();
     private readonly HashSet<long> _adding = new();
@@ -72,12 +82,19 @@ else if (results is not null)
         await Load();
     }
 
+    private async Task OnSortChanged()
+    {
+        if (string.IsNullOrWhiteSpace(lastQuery)) return;
+        selectedPage = 1;
+        await Load();
+    }
+
     private async Task Load()
     {
         loading = true; error = null;
         try
         {
-            results = await Api.SearchAsync(lastQuery, selectedPage, PerPage, _cts.Token);
+            results = await Api.SearchAsync(lastQuery, selectedPage, PerPage, sort, _cts.Token);
         }
         catch
         {

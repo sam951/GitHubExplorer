@@ -8,10 +8,13 @@ public sealed class GitHubExplorerApiClient : IGitHubExplorerApiClient
     private readonly HttpClient _http;
     public GitHubExplorerApiClient(HttpClient http) => _http = http;
 
-    public async Task<PagedResult<RepositoryDto>> SearchAsync(string q, int page, int perPage, CancellationToken ct)
+    public async Task<PagedResult<RepositoryDto>> SearchAsync(string q, int page, int perPage, string? sort, CancellationToken ct)
     {
-        var result = await _http.GetFromJsonAsync<PagedResult<RepositoryDto>>(
-            $"api/repositories?q={Uri.EscapeDataString(q)}&page={page}&perPage={perPage}", ct);
+        var url = $"api/repositories?q={Uri.EscapeDataString(q)}&page={page}&perPage={perPage}";
+        if (!string.IsNullOrWhiteSpace(sort))
+            url += $"&sort={Uri.EscapeDataString(sort)}";
+
+        var result = await _http.GetFromJsonAsync<PagedResult<RepositoryDto>>(url, ct);
         return result ?? new PagedResult<RepositoryDto>([], page, perPage, 0);
     }
 

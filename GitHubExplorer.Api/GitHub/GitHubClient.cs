@@ -6,9 +6,11 @@ public class GitHubClient : IGitHubClient
 {
     private readonly HttpClient _http;
     public GitHubClient(HttpClient http) => _http = http;
-    public async Task<PagedResult<RepositoryDto>> SearchRepositoriesAsync(string query, int page, int perPage, CancellationToken ct)
+    public async Task<PagedResult<RepositoryDto>> SearchRepositoriesAsync(string query, int page, int perPage, string? sort, CancellationToken ct)
     {
         var url = $"search/repositories?q={Uri.EscapeDataString(query)}&page={page}&per_page={perPage}";
+        if (!string.IsNullOrWhiteSpace(sort))
+            url += $"&sort={Uri.EscapeDataString(sort)}&order=desc";
 
         var response = await _http.GetAsync(url, ct);
         response.EnsureSuccessStatusCode();

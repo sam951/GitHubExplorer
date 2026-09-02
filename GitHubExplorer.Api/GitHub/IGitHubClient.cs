@@ -4,5 +4,5 @@ namespace GitHubExplorer.Api.GitHub;
 
 public interface IGitHubClient
 {
-    Task<PagedResult<RepositoryDto>> SearchRepositoriesAsync(string query, int page, int perPage, CancellationToken ct);
+    Task<PagedResult<RepositoryDto>> SearchRepositoriesAsync(string query, int page, int perPage, string? sort, CancellationToken ct);
 }

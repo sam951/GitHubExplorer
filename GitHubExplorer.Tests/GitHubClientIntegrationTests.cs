@@ -15,7 +15,7 @@ public class GitHubClientIntegrationTests
 
         var client = new GitHubClient(http);
 
-        var result = await client.SearchRepositoriesAsync("blazor", page: 1, perPage: 10, CancellationToken.None);
+        var result = await client.SearchRepositoriesAsync("blazor", page: 1, perPage: 10, sort: null, CancellationToken.None);
 
         Assert.IsNotEmpty(result.Items, "La ricerca deve restituire risultati");
         Assert.IsTrue(result.Items.All(r => !string.IsNullOrWhiteSpace(r.Name)), "Ogni repo deve avere un nome");

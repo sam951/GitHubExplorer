@@ -76,6 +76,29 @@ input, textarea {
     flex: 1;
 }
 
+.sort-select {
+    font: inherit;
+    padding: .5rem .65rem;
+    border: 1px solid var(--border);
+    border-radius: .5rem;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.search-hint {
+    color: var(--muted);
+    font-size: .85rem;
+    margin: -.5rem 0 1.25rem;
+}
+
+    .search-hint code {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: .3rem;
+        padding: .05rem .3rem;
+    }
+
 textarea {
     width: 100%;
     resize: vertical;
