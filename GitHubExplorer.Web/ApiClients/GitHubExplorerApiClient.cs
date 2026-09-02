@@ -24,7 +24,7 @@ public sealed class GitHubExplorerApiClient : IGitHubExplorerApiClient
     public async Task<bool> AddFavoriteAsync(CreateFavoriteRequest request, CancellationToken ct)
     {
         var response = await _http.PostAsJsonAsync("api/favorites", request, ct);
-        if (response.StatusCode == HttpStatusCode.Conflict) return false;   // 409 = duplicato
+        if (response.StatusCode == HttpStatusCode.Conflict) return false;
         response.EnsureSuccessStatusCode();
         return true;
     }

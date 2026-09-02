@@ -37,18 +37,34 @@ else if (results is not null)
     }
     else
     {
-        @foreach (var repo in results.Items)
-        {
-            var isFavorite = _favoriteIds.Contains(repo.GithubId);
-            <RepositoryCard Owner="@repo.Owner" Name="@repo.Name" HtmlUrl="@repo.HtmlUrl"
-                      Description="@repo.Description" Stars="repo.Stars">
-                <button class="@(isFavorite ? "added" : null)"
-                        @onclick="() => Add(repo)"
-                        disabled="@(isFavorite || _adding.Contains(repo.GithubId))">
-                    @(isFavorite ? "✓ Nei preferiti" : "★ Aggiungi ai preferiti")
-                </button>
-            </RepositoryCard>
-        }
+        <div class="results-toolbar">
+            <button class="view-btn @(gridView ? null : "active")" @onclick="() => gridView = false" title="Lista">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
+                    <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
+                </svg>
+            </button>
+            <button class="view-btn @(gridView ? "active" : null)" @onclick="() => gridView = true" title="Griglia">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="@(gridView ? "results-grid" : "results-list")">
+            @foreach (var repo in results.Items)
+            {
+                var isFavorite = _favoriteIds.Contains(repo.GithubId);
+                <RepositoryCard Owner="@repo.Owner" Name="@repo.Name" HtmlUrl="@repo.HtmlUrl"
+                          Description="@repo.Description" Stars="repo.Stars">
+                    <button class="@(isFavorite ? "added" : null)"
+                            @onclick="() => Add(repo)"
+                            disabled="@(isFavorite || _adding.Contains(repo.GithubId))">
+                        @(isFavorite ? "✓ Nei preferiti" : "★ Aggiungi ai preferiti")
+                    </button>
+                </RepositoryCard>
+            }
+        </div>
 
         <div class="pager">
             <button @onclick="() => GoToPage(selectedPage - 1)" disabled="@(selectedPage <= 1 || loading)">← Prec</button>
@@ -67,6 +83,7 @@ else if (results is not null)
     private string? error;
     private int selectedPage = 1;
     private string sort = "";
+    private bool gridView;
 
     private readonly CancellationTokenSource _cts = new();
     private readonly HashSet<long> _adding = new();

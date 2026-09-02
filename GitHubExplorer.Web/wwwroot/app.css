@@ -30,6 +30,33 @@ body {
     padding: .75rem 1.5rem;
     background: var(--surface);
     border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.topbar .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    color: var(--text);
+    font-weight: 700;
+    font-size: 1.05rem;
+    text-decoration: none;
+}
+
+    .topbar .brand svg {
+        color: var(--primary);
+    }
+
+.nav-links {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 1rem;
+    align-items: center;
 }
 
     .topbar a {
@@ -140,6 +167,41 @@ button {
         border-color: #b4e0c0;
         opacity: 1;
         cursor: default;
+    }
+
+/* Risultati: lista / griglia */
+.results-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: .35rem;
+    margin-bottom: .75rem;
+}
+
+.view-btn {
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: .4rem .5rem;
+    display: inline-flex;
+}
+
+    .view-btn:hover {
+        background: var(--bg);
+    }
+
+    .view-btn.active {
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: .75rem;
+}
+
+    .results-grid .repo-card {
+        margin-bottom: 0;
     }
 
 /* Repo card */
