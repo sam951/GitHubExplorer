@@ -1,19 +1,23 @@
--- Schema del database githubexplorer
--- Nessun ORM/migrations: lo schema è gestito a mano (vincolo della traccia: no EF).
--- Questo file viene eseguito automaticamente dal container MySQL al PRIMO avvio
--- (montato in /docker-entrypoint-initdb.d). Prima bozza: aggiustabile.
+CREATE DATABASE IF NOT EXISTS githubexplorer
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE githubexplorer;
 
 CREATE TABLE IF NOT EXISTS favorites (
     id          INT           NOT NULL AUTO_INCREMENT,
-    github_id   BIGINT        NOT NULL,                 -- id del repo su GitHub (per dedup)
-    name        VARCHAR(255)  NOT NULL,                 -- es. "AspNetCore"
-    full_name   VARCHAR(512)  NOT NULL,                 -- es. "dotnet/AspNetCore"
-    owner       VARCHAR(255)  NOT NULL,                 -- autore/owner
-    html_url    VARCHAR(512)  NOT NULL,                 -- link al repo
-    description  TEXT         NULL,                     -- può essere null lato GitHub
+    github_id   BIGINT        NOT NULL,
+    name        VARCHAR(255)  NOT NULL,
+    full_name   VARCHAR(512)  NOT NULL,
+    owner       VARCHAR(255)  NOT NULL,
+    html_url    VARCHAR(512)  NOT NULL,
+    description TEXT          NULL,
     stars       INT           NOT NULL DEFAULT 0,
-    note        TEXT          NULL,                     -- nota personale (bonus)
+    note        TEXT          NULL,
     created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    UNIQUE KEY uq_favorites_github_id (github_id)       -- impedisce duplicati
+    UNIQUE KEY uq_favorites_github_id (github_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE USER IF NOT EXISTS 'ghexp_user'@'%' IDENTIFIED BY 'ghexp_dev_pass';
+GRANT ALL PRIVILEGES ON githubexplorer.* TO 'ghexp_user'@'%';
+FLUSH PRIVILEGES;
