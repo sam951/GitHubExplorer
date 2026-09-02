@@ -7,7 +7,7 @@ namespace GitHubExplorer.Tests;
 public class GitHubClientIntegrationTests
 {
     [TestMethod]
-    public async Task Search_blazor_returns_results()
+    public async Task Se_cerco_blazor_ottengo_risultati()
     {
         using var http = new HttpClient { BaseAddress = new Uri("https://api.github.com/") };
         http.DefaultRequestHeaders.UserAgent.ParseAdd("GitHubExplorer");
@@ -15,12 +15,13 @@ public class GitHubClientIntegrationTests
 
         var client = new GitHubClient(http);
 
-        var results = await client.SearchRepositoriesAsync("blazor", CancellationToken.None);
+        var result = await client.SearchRepositoriesAsync("blazor", page: 1, perPage: 10, CancellationToken.None);
 
-        Assert.IsNotEmpty(results, "La ricerca deve restituire risultati");
-        Assert.IsTrue(results.All(r => !string.IsNullOrWhiteSpace(r.Name)), "Ogni repo deve avere un nome");
+        Assert.IsNotEmpty(result.Items, "La ricerca deve restituire risultati");
+        Assert.IsTrue(result.Items.All(r => !string.IsNullOrWhiteSpace(r.Name)), "Ogni repo deve avere un nome");
+        Assert.IsGreaterThan(0, result.TotalCount, "Il totale deve essere valorizzato");
 
-        foreach (var r in results.Take(5))
+        foreach (var r in result.Items.Take(5))
             Console.WriteLine($"{r.FullName} ⭐{r.Stars} — {r.Description}");
     }
 }

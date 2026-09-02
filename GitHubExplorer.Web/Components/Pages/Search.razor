@@ -8,7 +8,7 @@
 <div class="search-bar">
     <input @bind="query" @bind:event="oninput" @onkeyup="OnKeyUp"
            placeholder="Cerca su GitHub… (es. blazor)" />
-    <button @onclick="SearchAsync" disabled="@loading">Cerca</button>
+    <button @onclick="NewSearch" disabled="@loading">Cerca</button>
 </div>
 
 @if (loading)
@@ -21,51 +21,71 @@ else if (error is not null)
 }
 else if (results is not null)
 {
-    @if (results.Count == 0)
+    @if (results.Items.Count == 0)
     {
         <p>Nessun risultato per «@lastQuery».</p>
     }
     else
     {
-        @foreach (var repo in results)
+        @foreach (var repo in results.Items)
         {
-            <RepositoryCard FullName="@repo.FullName" HtmlUrl="@repo.HtmlUrl"
+            <RepositoryCard Owner="@repo.Owner" Name="@repo.Name" HtmlUrl="@repo.HtmlUrl"
                       Description="@repo.Description" Stars="repo.Stars">
                 <button @onclick="() => Add(repo)">★ Aggiungi ai preferiti</button>
             </RepositoryCard>
         }
+
+        <div class="pager">
+            <button @onclick="() => GoToPage(selectedPage - 1)" disabled="@(selectedPage <= 1 || loading)">← Prec</button>
+            <span class="pager-info">Pagina @selectedPage di @TotalPages · @results.TotalCount risultati</span>
+            <button @onclick="() => GoToPage(selectedPage + 1)" disabled="@(selectedPage >= TotalPages || loading)">Succ →</button>
+        </div>
     }
 }
 
 @code {
+    private const int PerPage = 10;
     private string query = "";
     private string lastQuery = "";
-    private IReadOnlyList<RepositoryDto>? results;
+    private PagedResult<RepositoryDto>? results;
     private bool loading;
     private string? error;
+    private int selectedPage = 1;
 
-    private async Task SearchAsync()
+    private int TotalPages => results is null ? 0 : (int)Math.Ceiling(results.TotalCount / (double)PerPage);
+
+    private async Task NewSearch()
     {
         if (string.IsNullOrWhiteSpace(query)) return;
-        loading = true; error = null; lastQuery = query;
+        lastQuery = query;
+        selectedPage = 1;
+        await Load();
+    }
+
+    private async Task GoToPage(int target)
+    {
+        selectedPage = target;
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        loading = true; error = null;
         try
         {
-            results = await Api.SearchAsync(query, CancellationToken.None);
+            results = await Api.SearchAsync(lastQuery, selectedPage, PerPage, CancellationToken.None);
         }
         catch
         {
             error = "Errore durante la ricerca. Riprova.";
             results = null;
         }
-        finally
-        {
-            loading = false;
-        }
+        finally { loading = false; }
     }
 
     private async Task OnKeyUp(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter") await SearchAsync();
+        if (e.Key == "Enter") await NewSearch();
     }
 
     private async Task Add(RepositoryDto repo)

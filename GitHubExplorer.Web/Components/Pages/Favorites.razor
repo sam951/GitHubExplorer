@@ -23,7 +23,7 @@ else if (favorites is not null)
     {
         @foreach (var fav in favorites)
         {
-            <RepositoryCard FullName="@fav.FullName" HtmlUrl="@fav.HtmlUrl"
+            <RepositoryCard Owner="@fav.Owner" Name="@fav.Name" HtmlUrl="@fav.HtmlUrl"
                             Description="@fav.Description" Stars="fav.Stars">
                 <div class="fav-note">
                     <textarea @bind="noteDrafts[fav.Id]" placeholder="Nota personale…"></textarea>

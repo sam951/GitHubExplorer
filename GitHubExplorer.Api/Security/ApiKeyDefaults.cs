@@ -1,7 +1,6 @@
-﻿namespace GitHubExplorer.Api.Security
+﻿namespace GitHubExplorer.Api.Security;
+
+public static class ApiKeyDefaults
 {
-    public static class ApiKeyDefaults
-    {
-        public const string AuthenticationScheme = "ApiKey";
-    }
+    public const string AuthenticationScheme = "ApiKey";
 }

@@ -1,9 +1,8 @@
 ﻿using GitHubExplorer.Contracts.DTO;
 
-namespace GitHubExplorer.Api.GitHub
+namespace GitHubExplorer.Api.GitHub;
+
+public interface IGitHubClient
 {
-    public interface IGitHubClient
-    {
-        Task<IReadOnlyList<RepositoryDto>> SearchRepositoriesAsync(string query, CancellationToken ct);
-    }
+    Task<PagedResult<RepositoryDto>> SearchRepositoriesAsync(string query, int page, int perPage, CancellationToken ct);
 }
