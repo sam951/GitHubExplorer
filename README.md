@@ -22,11 +22,7 @@ I preferiti sono salvati su MySQL.
 - Accesso ai dati in ADO.NET, senza ORM
 - Test con MSTest
 
-Un paio di vincoli della traccia e come li ho rispettati.
-
-Niente Entity Framework: l'accesso ai dati è scritto a mano in ADO.NET. `MySqlConnector` è solo il driver del database, non un ORM; serve per poter parlare con MySQL.
-
-Niente librerie esterne per l'interfaccia: i componenti, i toast, il dialog di conferma e i test double sono scritti a mano. MSTest è tooling di test, non una dipendenza dell'applicazione.
+`MySqlConnector` fa solo da driver verso MySQL, non è un ORM. L'interfaccia è costruita interamente a mano, senza librerie di componenti.
 
 ## Struttura della soluzione
 
@@ -113,7 +109,7 @@ La configurazione di sviluppo sta nei `appsettings.json` per far partire subito 
 
 La suite è volutamente piccola: pochi test, ma sensati.
 
-Gli unit test coprono la logica del `FavoritesController`: un duplicato non viene inserito e restituisce 409, un preferito nuovo restituisce 201. Al posto del repository reale usano un test double scritto a mano, uno stub con uno spy, coerente con il vincolo di non usare librerie, quindi senza framework di mocking. Sono veloci e non hanno dipendenze.
+Gli unit test coprono la logica del `FavoritesController`: un duplicato non viene inserito e restituisce 409, un preferito nuovo restituisce 201. Al posto del repository reale usano un test double scritto a mano, uno stub con uno spy, invece di un framework di mocking. Sono veloci e non hanno dipendenze.
 
 I test di integrazione invece esercitano i sistemi reali: il `GitHubClient` contro l'API vera di GitHub, per verificare il mapping dei dati, e il `FavoritesRepository` contro MySQL, per il ciclo di inserimento, lettura ed eliminazione. Richiedono rete e database attivi, e sono marcati con la categoria `Integration`.
 
@@ -141,9 +137,9 @@ Il dialog di conferma è un componente riutilizzabile scritto a mano. Espone un 
 
 Non ho usato Clean Architecture, CQRS o DDD: a questa scala il codice di supporto supererebbe quello che fa il lavoro, e sarebbe over-engineering.
 
-Ho scelto Blazor Server e non WebAssembly per tenere la chiave API sul server. Il `DelegatingHandler` che la aggiunge alle richieste gira lato server e non arriva mai al browser.
+Con Blazor Server la chiave API resta sul server: il `DelegatingHandler` che la aggiunge alle richieste gira lato server e non raggiunge mai il browser.
 
-L'interfaccia è tutta scritta a mano: i componenti (`RepositoryCard`, `Spinner`, `Toast`, `ConfirmDialog`), un `ToastService` scoped, e lo stile in CSS con CSS isolation dove aveva senso.
+L'interfaccia è tutta scritta a mano: i componenti (`RepositoryCard`, `Spinner`, `Toast`, `ConfirmDialog`), un `ToastService`, e lo stile in CSS.
 
 L'aspetto è volutamente sobrio. Ho preferito un'interfaccia pulita e curata quanto basta, senza esagerare con il design: per un'applicazione del genere qualcosa di troppo vistoso avrebbe rischiato di sembrare fuori misura. L'obiettivo era che fosse chiara e comoda da usare, non che fosse l'estetica a prendersi la scena.
 
