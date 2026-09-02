@@ -134,6 +134,14 @@ button {
             background: var(--danger-hover);
         }
 
+    button.added:disabled {
+        background: #dafbe1;
+        color: #1a7f37;
+        border-color: #b4e0c0;
+        opacity: 1;
+        cursor: default;
+    }
+
 /* Repo card */
 .repo-card {
     background: var(--surface);
@@ -229,6 +237,43 @@ button {
 .error {
     color: var(--danger);
     font-weight: 600;
+}
+
+/* Modale */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(31, 35, 40, .45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: .6rem;
+    padding: 1.25rem 1.5rem;
+    max-width: 26rem;
+    width: calc(100% - 2rem);
+    box-shadow: 0 8px 28px rgba(31, 35, 40, .25);
+}
+
+    .modal-box h2 {
+        font-size: 1.15rem;
+        margin: 0 0 .5rem;
+    }
+
+    .modal-box p {
+        color: var(--muted);
+        margin: 0 0 1.25rem;
+    }
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
 }
 
 h1:focus {

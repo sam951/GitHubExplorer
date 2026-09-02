@@ -36,6 +36,8 @@ else if (favorites is not null)
     }
 }
 
+<ConfirmDialog @ref="confirmDialog" />
+
 @code {
     private IReadOnlyList<FavoriteDto>? favorites;
     private Dictionary<int, string?> noteDrafts = new();
@@ -44,6 +46,8 @@ else if (favorites is not null)
 
     private readonly CancellationTokenSource _cts = new();
     private readonly HashSet<int> _busy = new();
+
+    private ConfirmDialog confirmDialog = default!;
 
     protected override async Task OnInitializedAsync() => await Load();
 
@@ -78,6 +82,9 @@ else if (favorites is not null)
 
     private async Task Delete(FavoriteDto fav)
     {
+        if (!await confirmDialog.ShowAsync("Rimuovi preferito", $"Vuoi rimuovere «{fav.FullName}» dai preferiti?"))
+            return;
+
         _busy.Add(fav.Id);
         try
         {

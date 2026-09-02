@@ -1,0 +1,36 @@
+@if (visible)
+{
+    <div class="modal-overlay" @onclick="() => Close(false)">
+        <div class="modal-box" @onclick:stopPropagation="true">
+            <h2>@title</h2>
+            <p>@message</p>
+            <div class="modal-actions">
+                <button @onclick="() => Close(false)">Annulla</button>
+                <button class="danger" @onclick="() => Close(true)">Elimina</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool visible;
+    private string title = "";
+    private string message = "";
+    private TaskCompletionSource<bool>? tcs;
+
+    public Task<bool> ShowAsync(string title, string message)
+    {
+        this.title = title;
+        this.message = message;
+        visible = true;
+        tcs = new TaskCompletionSource<bool>();
+        StateHasChanged();
+        return tcs.Task;
+    }
+
+    private void Close(bool result)
+    {
+        visible = false;
+        tcs?.SetResult(result);
+    }
+}

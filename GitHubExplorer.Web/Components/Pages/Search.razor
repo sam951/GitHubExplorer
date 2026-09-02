@@ -39,9 +39,14 @@ else if (results is not null)
     {
         @foreach (var repo in results.Items)
         {
+            var isFavorite = _favoriteIds.Contains(repo.GithubId);
             <RepositoryCard Owner="@repo.Owner" Name="@repo.Name" HtmlUrl="@repo.HtmlUrl"
                       Description="@repo.Description" Stars="repo.Stars">
-                <button @onclick="() => Add(repo)" disabled="@(_adding.Contains(repo.GithubId))">★ Aggiungi ai preferiti</button>
+                <button class="@(isFavorite ? "added" : null)"
+                        @onclick="() => Add(repo)"
+                        disabled="@(isFavorite || _adding.Contains(repo.GithubId))">
+                    @(isFavorite ? "✓ Nei preferiti" : "★ Aggiungi ai preferiti")
+                </button>
             </RepositoryCard>
         }
 
@@ -65,8 +70,20 @@ else if (results is not null)
 
     private readonly CancellationTokenSource _cts = new();
     private readonly HashSet<long> _adding = new();
+    private readonly HashSet<long> _favoriteIds = new();
 
     private int TotalPages => results is null ? 0 : (int)Math.Ceiling(results.TotalCount / (double)PerPage);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var favorites = await Api.GetFavoritesAsync(_cts.Token);
+            foreach (var f in favorites)
+                _favoriteIds.Add(f.GithubId);
+        }
+        catch { }
+    }
 
     private async Task NewSearch()
     {
@@ -118,6 +135,7 @@ else if (results is not null)
                 repo.GithubId, repo.Name, repo.FullName, repo.Owner,
                 repo.HtmlUrl, repo.Description, repo.Stars, Note: null);
             var added = await Api.AddFavoriteAsync(req, _cts.Token);
+            _favoriteIds.Add(repo.GithubId);
             if (added)
                 Toasts.ShowSuccess($"«{repo.FullName}» aggiunto ai preferiti.");
             else
