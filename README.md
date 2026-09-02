@@ -52,7 +52,7 @@ GitHubExplorer/
 
 ## Come si esegue
 
-**Prerequisiti:** .NET 10 SDK, Docker Desktop, Git.
+**Prerequisiti:** .NET 10 SDK, Git, e MySQL — via **Docker Desktop** (consigliato) oppure un'installazione **locale** (vedi la variante in fondo alla sezione).
 
 1. **Clona** il repository:
    ```bash
@@ -78,6 +78,19 @@ GitHubExplorer/
 4. Apri il front-end su **http://localhost:5056** (l'API risponde su **http://localhost:5204**).
 
 La config dev (chiave API compresa) è già nei file `appsettings.json`: l'app funziona senza passaggi manuali.
+
+### In alternativa: senza Docker (MySQL locale)
+
+Se hai già MySQL installato, Docker non serve: salta il passo 2 (niente `.env`) e crea il database eseguendo lo script sul tuo MySQL.
+
+- Da riga di comando, nella cartella del progetto:
+  ```bash
+  mysql -u root -p < db/schema.sql
+  ```
+  In PowerShell (che non supporta `<`): `Get-Content db\schema.sql | mysql -u root -p`.
+- Oppure apri `db/schema.sql` in MySQL Workbench ed eseguilo.
+
+Lo script crea database, tabella e utente applicativo (`ghexp_user` / `ghexp_dev_pass`) — le stesse credenziali della connection string. Se il tuo MySQL non è su `localhost:3306`, adegua `Port=` nella connection string (in `appsettings.Development.json`, override locale fuori dal repo). Poi prosegui dal passo 3.
 
 ---
 

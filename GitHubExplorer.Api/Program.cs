@@ -8,10 +8,7 @@ using System.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var connString = builder.Configuration.GetConnectionString("GitHubExplorerDb")
@@ -40,24 +37,16 @@ builder.Services.AddHttpClient<IGitHubClient, GitHubClient>((sp, http) =>
 builder.Services.AddSingleton(new MySqlConnectionFactory(connString));
 builder.Services.AddScoped<IFavoritesRepository, FavoritesRepository>();
 
-
 var app = builder.Build();
 
 app.UseExceptionHandler();
 
-app.UseAuthentication();
-app.UseAuthorization();
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
-{
     app.MapOpenApi();
-}
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

@@ -30,7 +30,7 @@ public class FavoritesControllerTests
             HtmlUrl: "https://github.com/o/x", Description: null, Stars: 0, Note: null);
 
     [TestMethod]
-    public async Task Se_gia_presente_add_restitusce_false()
+    public async Task Se_gia_presente_add_restituisce_Conflict()
     {
         var repo = new FakeFavoritesRepository { Exists = true };
         var controller = new FavoritesController(repo);
@@ -42,7 +42,7 @@ public class FavoritesControllerTests
     }
 
     [TestMethod]
-    public async Task Se_aggiungo_nuovo_preferito_restituisce_true()
+    public async Task Se_aggiungo_nuovo_preferito_restituisce_Created()
     {
         var repo = new FakeFavoritesRepository { Exists = false };
         var controller = new FavoritesController(repo);

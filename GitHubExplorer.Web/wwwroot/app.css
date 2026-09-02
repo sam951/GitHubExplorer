@@ -209,14 +209,6 @@ button {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: .6rem;
-    padding: 1rem;
-    margin-bottom: .75rem;
-}
-
-.repo-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: .6rem;
     padding: 1rem 1.15rem;
     margin-bottom: .75rem;
     box-shadow: 0 1px 2px rgba(31, 35, 40, .06);
@@ -227,6 +219,13 @@ button {
     border-color: #b9c1ca;
     box-shadow: 0 6px 16px rgba(31, 35, 40, .12);
     transform: translateY(-2px);
+}
+
+.repo-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
 }
 
 .repo-title {
@@ -340,18 +339,6 @@ button {
 
 h1:focus {
     outline: none;
-}
-
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
-}
-
-.invalid {
-    outline: 1px solid #e50000;
-}
-
-.validation-message {
-    color: #e50000;
 }
 
 .blazor-error-boundary {
