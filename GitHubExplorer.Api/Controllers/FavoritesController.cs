@@ -34,6 +34,6 @@ public sealed class FavoritesController : ControllerBase
         => await _repository.DeleteAsync(id, ct) ? NoContent() : NotFound();
 
     [HttpPut("{id:int}/note")]
-    public async Task<IActionResult> UpdateNote(int id, [FromBody] string? note, CancellationToken ct)
-        => await _repository.UpdateNoteAsync(id, note, ct) ? NoContent() : NotFound();
+    public async Task<IActionResult> UpdateNote(int id, [FromBody] UpdateNoteRequest request, CancellationToken ct)
+        => await _repository.UpdateNoteAsync(id, request.Note, ct) ? NoContent() : NotFound();
 }

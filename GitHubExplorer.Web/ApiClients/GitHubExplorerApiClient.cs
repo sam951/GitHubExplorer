@@ -36,7 +36,7 @@ public sealed class GitHubExplorerApiClient : IGitHubExplorerApiClient
 
     public async Task<bool> UpdateNoteAsync(int id, string? note, CancellationToken ct)
     {
-        var response = await _http.PutAsJsonAsync($"api/favorites/{id}/note", note, ct);
+        var response = await _http.PutAsJsonAsync($"api/favorites/{id}/note", new UpdateNoteRequest(note), ct);
         if (response.StatusCode == HttpStatusCode.NotFound) return false;
         response.EnsureSuccessStatusCode();
         return true;

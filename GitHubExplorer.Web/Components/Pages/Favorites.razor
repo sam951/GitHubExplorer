@@ -2,6 +2,7 @@
 @using GitHubExplorer.Web.Components.Shared
 @inject IGitHubExplorerApiClient Api
 @inject ToastService Toasts
+@implements IDisposable
 
 <h1>Preferiti</h1>
 
@@ -27,9 +28,9 @@ else if (favorites is not null)
                             Description="@fav.Description" Stars="fav.Stars">
                 <div class="fav-note">
                     <textarea @bind="noteDrafts[fav.Id]" placeholder="Nota personale…"></textarea>
-                    <button @onclick="() => SaveNote(fav)">Salva nota</button>
+                    <button @onclick="() => SaveNote(fav)" disabled="@(_busy.Contains(fav.Id))">Salva nota</button>
                 </div>
-                <button class="danger" @onclick="() => Delete(fav)">Elimina</button>
+                <button class="danger" @onclick="() => Delete(fav)" disabled="@(_busy.Contains(fav.Id))">Elimina</button>
             </RepositoryCard>
         }
     }
@@ -41,6 +42,9 @@ else if (favorites is not null)
     private bool loading;
     private string? error;
 
+    private readonly CancellationTokenSource _cts = new();
+    private readonly HashSet<int> _busy = new();
+
     protected override async Task OnInitializedAsync() => await Load();
 
     private async Task Load()
@@ -48,7 +52,7 @@ else if (favorites is not null)
         loading = true; error = null;
         try
         {
-            favorites = await Api.GetFavoritesAsync(CancellationToken.None);
+            favorites = await Api.GetFavoritesAsync(_cts.Token);
             noteDrafts = favorites.ToDictionary(f => f.Id, f => f.Note);
         }
         catch
@@ -61,24 +65,34 @@ else if (favorites is not null)
 
     private async Task SaveNote(FavoriteDto fav)
     {
+        _busy.Add(fav.Id);
         try
         {
-            var ok = await Api.UpdateNoteAsync(fav.Id, noteDrafts[fav.Id], CancellationToken.None);
+            var ok = await Api.UpdateNoteAsync(fav.Id, noteDrafts[fav.Id], _cts.Token);
             if (ok) Toasts.ShowSuccess("Nota salvata.");
             else { Toasts.ShowInfo("Preferito non più presente, aggiorno."); await Load(); }
         }
         catch { Toasts.ShowError("Errore nel salvataggio della nota."); }
+        finally { _busy.Remove(fav.Id); }
     }
 
     private async Task Delete(FavoriteDto fav)
     {
+        _busy.Add(fav.Id);
         try
         {
-            var ok = await Api.DeleteFavoriteAsync(fav.Id, CancellationToken.None);
+            var ok = await Api.DeleteFavoriteAsync(fav.Id, _cts.Token);
             if (ok) Toasts.ShowSuccess($"«{fav.FullName}» rimosso.");
             else Toasts.ShowInfo("Preferito già rimosso.");
             await Load();
         }
         catch { Toasts.ShowError("Errore durante l'eliminazione."); }
+        finally { _busy.Remove(fav.Id); }
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }

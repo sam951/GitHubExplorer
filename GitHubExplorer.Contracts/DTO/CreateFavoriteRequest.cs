@@ -3,11 +3,11 @@
 namespace GitHubExplorer.Contracts.DTO;
 
 public record CreateFavoriteRequest(
-        long GithubId,
-        [property: Required] string Name,
-        [property: Required] string FullName,
-        [property: Required] string Owner,
-        [property: Required] string HtmlUrl,
-        string? Description,
-        int Stars,
-        string? Note);
+    long GithubId,
+    [Required] string Name,
+    [Required] string FullName,
+    [Required] string Owner,
+    [Required] string HtmlUrl,
+    string? Description,
+    int Stars,
+    string? Note);

@@ -2,6 +2,7 @@
 @using GitHubExplorer.Web.Components.Shared
 @inject IGitHubExplorerApiClient Api
 @inject ToastService Toasts
+@implements IDisposable
 
 <h1>Cerca repository</h1>
 
@@ -31,7 +32,7 @@ else if (results is not null)
         {
             <RepositoryCard Owner="@repo.Owner" Name="@repo.Name" HtmlUrl="@repo.HtmlUrl"
                       Description="@repo.Description" Stars="repo.Stars">
-                <button @onclick="() => Add(repo)">★ Aggiungi ai preferiti</button>
+                <button @onclick="() => Add(repo)" disabled="@(_adding.Contains(repo.GithubId))">★ Aggiungi ai preferiti</button>
             </RepositoryCard>
         }
 
@@ -51,6 +52,9 @@ else if (results is not null)
     private bool loading;
     private string? error;
     private int selectedPage = 1;
+
+    private readonly CancellationTokenSource _cts = new();
+    private readonly HashSet<long> _adding = new();
 
     private int TotalPages => results is null ? 0 : (int)Math.Ceiling(results.TotalCount / (double)PerPage);
 
@@ -73,7 +77,7 @@ else if (results is not null)
         loading = true; error = null;
         try
         {
-            results = await Api.SearchAsync(lastQuery, selectedPage, PerPage, CancellationToken.None);
+            results = await Api.SearchAsync(lastQuery, selectedPage, PerPage, _cts.Token);
         }
         catch
         {
@@ -90,12 +94,13 @@ else if (results is not null)
 
     private async Task Add(RepositoryDto repo)
     {
-        var req = new CreateFavoriteRequest(
-            repo.GithubId, repo.Name, repo.FullName, repo.Owner,
-            repo.HtmlUrl, repo.Description, repo.Stars, Note: null);
+        _adding.Add(repo.GithubId);
         try
         {
-            var added = await Api.AddFavoriteAsync(req, CancellationToken.None);
+            var req = new CreateFavoriteRequest(
+                repo.GithubId, repo.Name, repo.FullName, repo.Owner,
+                repo.HtmlUrl, repo.Description, repo.Stars, Note: null);
+            var added = await Api.AddFavoriteAsync(req, _cts.Token);
             if (added)
                 Toasts.ShowSuccess($"«{repo.FullName}» aggiunto ai preferiti.");
             else
@@ -105,5 +110,15 @@ else if (results is not null)
         {
             Toasts.ShowError("Impossibile aggiungere il preferito. Riprova.");
         }
+        finally
+        {
+            _adding.Remove(repo.GithubId);
+        }
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }
