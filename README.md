@@ -6,9 +6,9 @@ Applicazione .NET per cercare repository su GitHub e tenere una lista di preferi
 
 - Cerca tra i repository pubblici di GitHub, con risultati paginati e ordinabili per rilevanza, stelle, data di aggiornamento o fork.
 - Accetta i qualificatori di ricerca di GitHub (per esempio `language:c#`, `stars:>1000`, `in:name`): la query viene passata a GitHub così com'è.
-- Mostra i risultati come lista o come griglia, a scelta.
+- Mostra i risultati come lista o come griglia, a scelta, e ricorda la preferenza tra una sessione e l'altra. Ogni risultato riporta l'avatar del proprietario, il linguaggio principale, le stelle, i fork e la data dell'ultimo aggiornamento.
 - Permette di salvare un repository tra i preferiti evitando i duplicati; nella lista di ricerca il pulsante indica quali repository sono già salvati.
-- Consente di scrivere e modificare una nota su ogni preferito.
+- Consente di scrivere e modificare una nota su ogni preferito, e di filtrare i preferiti per nome o nota.
 - Permette di eliminare un preferito, chiedendo conferma prima di procedere.
 
 I preferiti sono salvati su MySQL.
@@ -109,7 +109,7 @@ La configurazione di sviluppo sta nei `appsettings.json` per far partire subito 
 
 La suite è volutamente piccola: pochi test, ma sensati.
 
-Gli unit test coprono la logica del `FavoritesController`: un duplicato non viene inserito e restituisce 409, un preferito nuovo restituisce 201. Al posto del repository reale usano un test double scritto a mano, uno stub con uno spy, invece di un framework di mocking. Sono veloci e non hanno dipendenze.
+Gli unit test coprono la logica dei controller e la traduzione degli errori: il `FavoritesController` (un duplicato restituisce 409, un preferito nuovo 201), il `RepositoriesController` (query vuota respinta, clamp di `page` e `perPage`, ordinamento fuori whitelist ignorato) e il `GlobalExceptionHandler` (le eccezioni note mappate sullo status giusto). Al posto delle dipendenze reali usano test double scritti a mano, stub con uno spy, invece di un framework di mocking. Sono veloci e non hanno dipendenze.
 
 I test di integrazione invece esercitano i sistemi reali: il `GitHubClient` contro l'API vera di GitHub, per verificare il mapping dei dati, e il `FavoritesRepository` contro MySQL, per il ciclo di inserimento, lettura ed eliminazione. Richiedono rete e database attivi, e sono marcati con la categoria `Integration`.
 
@@ -141,10 +141,11 @@ Con Blazor Server la chiave API resta sul server: il `DelegatingHandler` che la 
 
 L'interfaccia è tutta scritta a mano: i componenti (`RepositoryCard`, `Spinner`, `Toast`, `ConfirmDialog`), un `ToastService`, e lo stile in CSS.
 
+Lo stile sta su variabili CSS, e questo rende la modalità scura quasi gratuita: un blocco `prefers-color-scheme` che ridefinisce i token, così l'interfaccia segue il tema del sistema. Ho curato anche i dettagli che spesso si trascurano — focus visibile da tastiera, etichette per gli screen reader e rispetto di `prefers-reduced-motion` — e le pagine vuote hanno una schermata d'invito invece di restare spoglie.
+
 L'aspetto è volutamente sobrio. Ho preferito un'interfaccia pulita e curata quanto basta, senza esagerare con il design: per un'applicazione del genere qualcosa di troppo vistoso avrebbe rischiato di sembrare fuori misura. L'obiettivo era che fosse chiara e comoda da usare, non che fosse l'estetica a prendersi la scena.
 
 ## Possibili migliorie
 
 - Gestire il rate limit di GitHub in modo dedicato, con un 429 o un 503 e un messaggio, invece del 502 generico.
 - Spostare i segreti su user-secrets o un secret manager, e aggiungere health check e logging strutturato.
-- Ricordare la preferenza di vista, lista o griglia, tra una sessione e l'altra.
