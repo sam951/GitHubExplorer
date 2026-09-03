@@ -246,15 +246,25 @@ button {
 
 .repo-head {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 1rem;
+    gap: .6rem;
+}
+
+.repo-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    flex: none;
+    object-fit: cover;
 }
 
 .repo-title {
     text-decoration: none;
     font-size: 1.05rem;
     line-height: 1.3;
+    margin-right: auto;
 }
 
 .repo-title .repo-owner {
@@ -269,6 +279,30 @@ button {
 
 .repo-title:hover .repo-name {
     text-decoration: underline;
+}
+
+.repo-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .9rem;
+    align-items: center;
+    margin: .55rem 0 0 3.1rem;
+    font-size: .8rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.lang {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+}
+
+.lang-dot {
+    width: .72rem;
+    height: .72rem;
+    border-radius: 50%;
+    flex: none;
 }
 
 .stars {
@@ -289,6 +323,8 @@ button {
 .desc {
     color: var(--muted);
     margin: .5rem 0;
+    padding-top: .6rem;
+    border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 }
 
 .repo-actions {
