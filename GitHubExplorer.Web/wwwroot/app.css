@@ -550,3 +550,19 @@ h1:focus {
     font-size: .9rem;
     margin: -.5rem 0 1.1rem;
 }
+
+.fav-filter {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.empty-inline {
+    color: var(--muted);
+}
+
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .6rem;
+}

@@ -9,7 +9,7 @@
 <h1>Cerca repository</h1>
 
 <div class="search-bar">
-    <input @ref="searchInput" @bind="query" @bind:event="oninput" @onkeyup="OnKeyUp"
+    <input @ref="searchInput" id="repo-search" @bind="query" @bind:event="oninput" @onkeyup="OnKeyUp"
            placeholder="Cerca su GitHub… (es. blazor)" aria-label="Cerca su GitHub" />
     <select @bind="sort" @bind:after="OnSortChanged" class="sort-select">
         <option value="">Più rilevanti</option>
@@ -29,7 +29,10 @@
 }
 else if (error is not null)
 {
-    <p class="error">@error</p>
+    <div class="error-state">
+        <p class="error">@error</p>
+        <button @onclick="Load" disabled="@loading">Riprova</button>
+    </div>
 }
 else if (results is not null)
 {

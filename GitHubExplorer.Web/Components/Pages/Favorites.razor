@@ -11,6 +11,8 @@
 @if (favorites is { Count: > 0 })
 {
     <p class="fav-count">@Preferiti(favorites.Count)</p>
+    <input class="fav-filter" @bind="filter" @bind:event="oninput"
+           placeholder="Filtra per nome o nota…" aria-label="Filtra i preferiti" />
 }
 
 @if (loading)
@@ -19,7 +21,10 @@
 }
 else if (error is not null)
 {
-    <p class="error">@error</p>
+    <div class="error-state">
+        <p class="error">@error</p>
+        <button @onclick="Load" disabled="@loading">Riprova</button>
+    </div>
 }
 else if (favorites is not null)
 {
@@ -36,9 +41,13 @@ else if (favorites is not null)
             <p>Vai su <a href="">Cerca</a> e salva i repository che vuoi tenere d'occhio, con una nota personale.</p>
         </div>
     }
+    else if (!Filtered.Any())
+    {
+        <p class="empty-inline">Nessun preferito corrisponde a «@filter».</p>
+    }
     else
     {
-        @foreach (var fav in favorites)
+        @foreach (var fav in Filtered)
         {
             <RepositoryCard Owner="@fav.Owner" Name="@fav.Name" HtmlUrl="@fav.HtmlUrl"
                             Description="@fav.Description" Stars="fav.Stars"
@@ -60,6 +69,7 @@ else if (favorites is not null)
     private Dictionary<int, string?> noteDrafts = new();
     private bool loading;
     private string? error;
+    private string filter = "";
 
     private readonly CancellationTokenSource _cts = new();
     private readonly HashSet<int> _busy = new();
@@ -69,6 +79,13 @@ else if (favorites is not null)
     protected override async Task OnInitializedAsync() => await Load();
 
     private static string Preferiti(int n) => n == 1 ? "1 preferito" : $"{n} preferiti";
+
+    private IEnumerable<FavoriteDto> Filtered =>
+        favorites is null || string.IsNullOrWhiteSpace(filter)
+            ? favorites ?? Enumerable.Empty<FavoriteDto>()
+            : favorites.Where(f =>
+                f.FullName.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                (f.Note?.Contains(filter, StringComparison.OrdinalIgnoreCase) ?? false));
 
     private async Task Load()
     {
