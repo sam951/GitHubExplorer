@@ -18,7 +18,16 @@ else if (favorites is not null)
 {
     @if (favorites.Count == 0)
     {
-        <p>Nessun preferito. Vai su <a href="">Cerca</a> per aggiungerne.</p>
+        <div class="empty-state">
+            <svg class="empty-art" width="150" height="120" viewBox="0 0 150 120" fill="none" aria-hidden="true">
+                <rect x="34" y="22" width="82" height="74" rx="9" class="art-line" />
+                <line x1="47" y1="44" x2="103" y2="44" class="art-soft-line" />
+                <line x1="47" y1="58" x2="86" y2="58" class="art-soft-line" />
+                <path d="M75 60 l5.7 11.6 12.8 1.9 -9.3 9 2.2 12.8 -11.4-6 -11.4 6 2.2-12.8 -9.3-9 12.8-1.9z" class="art-star" />
+            </svg>
+            <h2>Ancora nessun preferito</h2>
+            <p>Vai su <a href="">Cerca</a> e salva i repository che vuoi tenere d'occhio, con una nota personale.</p>
+        </div>
     }
     else
     {

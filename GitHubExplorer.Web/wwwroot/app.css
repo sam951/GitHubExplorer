@@ -459,3 +459,70 @@ h1:focus {
         transform: translateY(-2px);
     }
 }
+
+.empty-state {
+    text-align: center;
+    padding: 2.6rem 1rem 3rem;
+}
+
+.empty-art {
+    margin: 0 auto 1.2rem;
+    display: block;
+}
+
+.empty-art .art-soft {
+    fill: color-mix(in srgb, var(--muted) 16%, transparent);
+}
+
+.empty-art .art-line {
+    stroke: var(--primary);
+    stroke-width: 3.5;
+    fill: none;
+    stroke-linecap: round;
+}
+
+.empty-art .art-soft-line {
+    stroke: color-mix(in srgb, var(--muted) 30%, transparent);
+    stroke-width: 4;
+    stroke-linecap: round;
+}
+
+.empty-art .art-star {
+    fill: var(--star-bg);
+    stroke: var(--star-bd);
+    stroke-width: 2;
+}
+
+.empty-state h2 {
+    font-size: 1.22rem;
+    margin: 0 0 .45rem;
+}
+
+.empty-state p {
+    color: var(--muted);
+    max-width: 42ch;
+    margin: 0 auto 1.3rem;
+}
+
+.example-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    justify-content: center;
+}
+
+.chip {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: .8rem;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 2rem;
+    padding: .34rem .8rem;
+    cursor: pointer;
+}
+
+.chip:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
