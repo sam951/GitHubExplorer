@@ -61,7 +61,8 @@ else if (results is not null)
             {
                 var isFavorite = _favoriteIds.Contains(repo.GithubId);
                 <RepositoryCard Owner="@repo.Owner" Name="@repo.Name" HtmlUrl="@repo.HtmlUrl"
-                          Description="@repo.Description" Stars="repo.Stars">
+                          Description="@repo.Description" Stars="repo.Stars"
+                          Language="@repo.Language" Forks="repo.Forks" Meta="@Aggiornato(repo.UpdatedAt)">
                     <button class="@(isFavorite ? "added" : null)"
                             @onclick="() => Add(repo)"
                             disabled="@(isFavorite || _adding.Contains(repo.GithubId))">
@@ -148,6 +149,15 @@ else
     }
 
     private static string Risultati(int n) => n == 1 ? "1 risultato" : $"{n:N0} risultati";
+
+    private static string Aggiornato(DateTime d)
+    {
+        var days = (DateTime.UtcNow - d).TotalDays;
+        return days < 1 ? "aggiornato oggi"
+             : days < 2 ? "aggiornato ieri"
+             : days < 30 ? $"aggiornato {(int)days} giorni fa"
+             : $"aggiornato il {d:d MMM yyyy}";
+    }
 
     private async Task GoToPage(int target)
     {

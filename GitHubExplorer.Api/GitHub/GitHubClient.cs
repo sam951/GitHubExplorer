@@ -27,7 +27,10 @@ public class GitHubClient : IGitHubClient
             Owner: r.Owner?.Login ?? "",
             HtmlUrl: r.HtmlUrl,
             Description: r.Description,
-            Stars: r.Stars))
+            Stars: r.Stars,
+            Language: r.Language,
+            Forks: r.Forks,
+            UpdatedAt: r.UpdatedAt))
         .ToList();
 
         var total = Math.Min(payload.TotalCount, 1000);
