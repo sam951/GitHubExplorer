@@ -77,9 +77,7 @@ Se hai già MySQL installato puoi saltare Docker. Salta il passo del `.env` e cr
 mysql -u root -p < db/schema.sql
 ```
 
-In PowerShell, che non supporta `<`, usa `Get-Content db\schema.sql | mysql -u root -p`. In alternativa apri `db/schema.sql` in MySQL Workbench e lancialo da lì.
-
-Lo script crea il database, la tabella e l'utente applicativo (`ghexp_user`, con password `ghexp_dev_pass`), cioè le stesse credenziali che usa la connection string. Se il tuo MySQL non è sulla porta 3306 basta cambiare `Port=` nella connection string, in `appsettings.Development.json`. Poi riprendi dall'avvio dei progetti.
+Lo script crea il database, la tabella e l'utente applicativo (`ghexp_user`, con password `ghexp_dev_pass`), cioè le stesse credenziali che usa la connection string.
 
 ## Endpoint dell'API
 
@@ -93,17 +91,17 @@ Tutti gli endpoint richiedono l'header `X-Api-Key`.
 | DELETE | `/api/favorites/{id}` | elimina un preferito | 204, 404, 401 |
 | PUT | `/api/favorites/{id}/note` | aggiorna la nota | 204, 404, 401 |
 
-La ricerca restituisce un risultato paginato, con `items` e `totalCount`. GitHub limita la ricerca a 1000 risultati e `perPage` a 100, quindi il totale che espongo è già limitato a 1000: in questo modo non si può navigare verso pagine che GitHub rifiuterebbe.
+La ricerca restituisce un risultato paginato, con `items` e `totalCount`.
 
 ## Sicurezza
 
-L'autenticazione è a chiave API su header (`X-Api-Key`). Un `AuthenticationHandler` valida la chiave e i controller sono protetti con `[Authorize]`; se la chiave manca o è sbagliata la risposta è 401. Il confronto della chiave è fatto a tempo costante con `CryptographicOperations.FixedTimeEquals`, per non lasciare spazio a un timing attack. La chiave di sviluppo (`dev-local-api-key-2026`) è committata solo per far girare il progetto senza configurazione, e non protegge niente di reale.
+L'autenticazione è a chiave API su header (`X-Api-Key`). Un `AuthenticationHandler` valida la chiave e i controller sono protetti con `[Authorize]`; se la chiave manca o è sbagliata la risposta è 401. La chiave di sviluppo (`dev-local-api-key-2026`) è committata solo per far girare il progetto senza configurazione, e non protegge niente di reale.
 
 L'input viene validato con le DataAnnotations sul DTO di creazione. Grazie a `[ApiController]` un input non valido produce da solo una risposta 400 con ProblemDetails, senza controlli manuali nel controller.
 
-La gestione degli errori è centralizzata in un `IExceptionHandler`, insieme a `AddProblemDetails()`, così le risposte d'errore seguono lo standard RFC 7807. Le eccezioni note vengono tradotte in modo specifico: un duplicato a database diventa un 409, GitHub irraggiungibile diventa un 502, tutto il resto un 500. Il corpo della risposta non espone dettagli interni; quelli finiscono nei log del server, correlabili tramite il `traceId`.
+La gestione degli errori è centralizzata in un `IExceptionHandler`, insieme a `AddProblemDetails()`, così le risposte d'errore seguono gli standard. Le eccezioni note vengono tradotte in modo specifico: un duplicato a database diventa un 409, GitHub irraggiungibile diventa un 502, tutto il resto un 500. Il corpo della risposta non espone dettagli interni; quelli finiscono nei log del server, correlabili tramite il `traceId`.
 
-La configurazione di sviluppo sta nei `appsettings.json` per far partire subito il progetto. Gli override e i segreti veri stanno in `appsettings.Development.json` e in `.env`, entrambi fuori dal repository; in produzione i segreti andrebbero presi da variabili d'ambiente o da un secret manager. Il container MySQL è pubblicato solo su `127.0.0.1`, quindi non è mai esposto in rete, e le sue credenziali stanno in `.env`, che non è committato.
+La configurazione di sviluppo sta negli `appsettings.json` per far partire subito il progetto. Gli override e i segreti veri stanno in `appsettings.Development.json` e in `.env`, entrambi fuori dal repository; in produzione i segreti andrebbero presi da variabili d'ambiente o da un secret manager. Il container MySQL è pubblicato solo su `127.0.0.1`, quindi non è mai esposto in rete, e le sue credenziali stanno in `.env`, che non è committato.
 
 ## Test
 
@@ -111,7 +109,7 @@ La suite è volutamente piccola: pochi test, ma sensati.
 
 Gli unit test coprono la logica dei controller e la traduzione degli errori: il `FavoritesController` (un duplicato restituisce 409, un preferito nuovo 201), il `RepositoriesController` (query vuota respinta, clamp di `page` e `perPage`, ordinamento fuori whitelist ignorato) e il `GlobalExceptionHandler` (le eccezioni note mappate sullo status giusto). Al posto delle dipendenze reali usano test double scritti a mano, stub con uno spy, invece di un framework di mocking. Sono veloci e non hanno dipendenze.
 
-I test di integrazione invece esercitano i sistemi reali: il `GitHubClient` contro l'API vera di GitHub, per verificare il mapping dei dati, e il `FavoritesRepository` contro MySQL, per il ciclo di inserimento, lettura ed eliminazione. Richiedono rete e database attivi, e sono marcati con la categoria `Integration`.
+I test di integrazione invece testano gli aspetti reali: il `GitHubClient` contro l'API vera di GitHub, per verificare il mapping dei dati, e il `FavoritesRepository` contro MySQL, per il ciclo di inserimento, lettura ed eliminazione. Richiedono rete e database attivi, e sono marcati con la categoria `Integration`.
 
 ```bash
 dotnet test
@@ -141,9 +139,9 @@ Con Blazor Server la chiave API resta sul server: il `DelegatingHandler` che la 
 
 L'interfaccia è tutta scritta a mano: i componenti (`RepositoryCard`, `Spinner`, `Toast`, `ConfirmDialog`), un `ToastService`, e lo stile in CSS.
 
-Lo stile sta su variabili CSS, e questo rende la modalità scura quasi gratuita: un blocco `prefers-color-scheme` che ridefinisce i token, così l'interfaccia segue il tema del sistema. Ho curato anche i dettagli che spesso si trascurano — focus visibile da tastiera, etichette per gli screen reader e rispetto di `prefers-reduced-motion` — e le pagine vuote hanno una schermata d'invito invece di restare spoglie.
+Lo stile sta su variabili CSS, e questo rende la modalità scura facile da gestire..
 
-L'aspetto è volutamente sobrio. Ho preferito un'interfaccia pulita e curata quanto basta, senza esagerare con il design: per un'applicazione del genere qualcosa di troppo vistoso avrebbe rischiato di sembrare fuori misura. L'obiettivo era che fosse chiara e comoda da usare, non che fosse l'estetica a prendersi la scena.
+L'aspetto è volutamente sobrio. Ho preferito un'interfaccia pulita e curata quanto basta, senza esagerare con il design: per un'applicazione del genere qualcosa di troppo vistoso avrebbe rischiato di sembrare fuori misura. L'obiettivo era che fosse chiara e comoda da usare.
 
 ## Possibili migliorie
 
