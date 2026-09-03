@@ -19,6 +19,7 @@ builder.Services.AddHttpClient<IGitHubExplorerApiClient, GitHubExplorerApiClient
 .AddHttpMessageHandler<ApiKeyHandler>();
 
 builder.Services.AddScoped<ToastService>();
+builder.Services.AddScoped<SearchState>();
 
 var app = builder.Build();
 

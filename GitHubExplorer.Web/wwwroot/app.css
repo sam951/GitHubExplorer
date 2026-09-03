@@ -16,7 +16,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
         color-scheme: dark;
         accent-color: #4493f8;
         --bg: #0d1117;
@@ -32,6 +32,23 @@
         --added-fg: #3fb950; --added-bg: #12261c; --added-bd: #238636;
         --card-hover-border: #484f58;
     }
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    accent-color: #4493f8;
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --primary: #4493f8;
+    --primary-hover: #388bfd;
+    --danger: #f85149;
+    --danger-hover: #da3633;
+    --star-fg: #e3b341;  --star-bg: #26220f;  --star-bd: #3b3115;
+    --added-fg: #3fb950; --added-bg: #12261c; --added-bd: #238636;
+    --card-hover-border: #484f58;
 }
 
 * {
@@ -437,9 +454,13 @@ h1:focus {
 }
 
 @media (prefers-color-scheme: dark) {
-    .repo-card {
+    :root:not([data-theme="light"]) .repo-card {
         border-color: color-mix(in srgb, var(--border) 100%, #fff 6%);
     }
+}
+
+:root[data-theme="dark"] .repo-card {
+    border-color: color-mix(in srgb, var(--border) 100%, #fff 6%);
 }
 
 :where(button, input, textarea, select, a):focus-visible {
@@ -525,6 +546,7 @@ h1:focus {
 .chip:hover {
     border-color: var(--primary);
     color: var(--primary);
+    background: var(--surface);
 }
 
 .results-head {
@@ -565,4 +587,25 @@ h1:focus {
     flex-direction: column;
     align-items: flex-start;
     gap: .6rem;
+}
+
+.theme-toggle {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: .4rem;
+    border-radius: .5rem;
+    cursor: pointer;
+}
+
+.theme-toggle:hover {
+    background: var(--bg);
+    color: var(--text);
+}
+
+.theme-toggle svg {
+    display: block;
 }

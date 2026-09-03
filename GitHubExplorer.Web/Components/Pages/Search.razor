@@ -1,7 +1,8 @@
-﻿@page "/"
+@page "/"
 @using GitHubExplorer.Web.Components.Shared
 @inject IGitHubExplorerApiClient Api
 @inject ToastService Toasts
+@inject SearchState State
 @inject IJSRuntime JS
 @implements IDisposable
 
@@ -10,9 +11,9 @@
 <h1>Cerca repository</h1>
 
 <div class="search-bar">
-    <input @ref="searchInput" id="repo-search" @bind="query" @bind:event="oninput" @onkeyup="OnKeyUp"
+    <input @ref="searchInput" id="repo-search" @bind="State.Query" @bind:event="oninput" @onkeyup="OnKeyUp"
            placeholder="Cerca su GitHub… (es. blazor)" aria-label="Cerca su GitHub" />
-    <select @bind="sort" @bind:after="OnSortChanged" class="sort-select">
+    <select @bind="State.Sort" @bind:after="OnSortChanged" class="sort-select">
         <option value="">Più rilevanti</option>
         <option value="stars">Più stelle</option>
         <option value="updated">Aggiornati di recente</option>
@@ -35,24 +36,24 @@ else if (error is not null)
         <button @onclick="Load" disabled="@loading">Riprova</button>
     </div>
 }
-else if (results is not null)
+else if (State.Results is not null)
 {
-    @if (results.Items.Count == 0)
+    @if (State.Results.Items.Count == 0)
     {
-        <p>Nessun risultato per «@lastQuery».</p>
+        <p>Nessun risultato per «@State.LastQuery».</p>
     }
     else
     {
         <div class="results-head">
-            <h2 class="results-title">Risultati per «<span class="q">@lastQuery</span>»</h2>
+            <h2 class="results-title">Risultati per «<span class="q">@State.LastQuery</span>»</h2>
             <div class="results-toolbar">
-                <button class="view-btn @(gridView ? null : "active")" @onclick="() => SetView(false)" title="Lista" aria-label="Vista lista" aria-pressed="@(!gridView)">
+                <button class="view-btn @(State.GridView ? null : "active")" @onclick="() => SetView(false)" title="Lista" aria-label="Vista lista" aria-pressed="@(!State.GridView)">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
                         <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
                     </svg>
                 </button>
-                <button class="view-btn @(gridView ? "active" : null)" @onclick="() => SetView(true)" title="Griglia" aria-label="Vista griglia" aria-pressed="@gridView">
+                <button class="view-btn @(State.GridView ? "active" : null)" @onclick="() => SetView(true)" title="Griglia" aria-label="Vista griglia" aria-pressed="@State.GridView">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
                     </svg>
@@ -60,8 +61,8 @@ else if (results is not null)
             </div>
         </div>
 
-        <div class="@(gridView ? "results-grid" : "results-list")">
-            @foreach (var repo in results.Items)
+        <div class="@(State.GridView ? "results-grid" : "results-list")">
+            @foreach (var repo in State.Results.Items)
             {
                 var isFavorite = _favoriteIds.Contains(repo.GithubId);
                 <RepositoryCard Owner="@repo.Owner" Name="@repo.Name" HtmlUrl="@repo.HtmlUrl"
@@ -77,9 +78,9 @@ else if (results is not null)
         </div>
 
         <div class="pager">
-            <button @onclick="() => GoToPage(selectedPage - 1)" disabled="@(selectedPage <= 1 || loading)">← Prec</button>
-            <span class="pager-info">Pagina @selectedPage di @TotalPages · @Risultati(results.TotalCount)</span>
-            <button @onclick="() => GoToPage(selectedPage + 1)" disabled="@(selectedPage >= TotalPages || loading)">Succ →</button>
+            <button @onclick="() => GoToPage(State.Page - 1)" disabled="@(State.Page <= 1 || loading)">← Prec</button>
+            <span class="pager-info">Pagina @State.Page di @TotalPages · @Risultati(State.Results.TotalCount)</span>
+            <button @onclick="() => GoToPage(State.Page + 1)" disabled="@(State.Page >= TotalPages || loading)">Succ →</button>
         </div>
     }
 }
@@ -105,21 +106,15 @@ else
 
 @code {
     private const int PerPage = 10;
-    private string query = "";
-    private string lastQuery = "";
-    private PagedResult<RepositoryDto>? results;
     private bool loading;
     private string? error;
-    private int selectedPage = 1;
-    private string sort = "";
-    private bool gridView;
     private ElementReference searchInput;
 
     private readonly CancellationTokenSource _cts = new();
     private readonly HashSet<long> _adding = new();
     private readonly HashSet<long> _favoriteIds = new();
 
-    private int TotalPages => results is null ? 0 : (int)Math.Ceiling(results.TotalCount / (double)PerPage);
+    private int TotalPages => State.Results is null ? 0 : (int)Math.Ceiling(State.Results.TotalCount / (double)PerPage);
 
     protected override async Task OnInitializedAsync()
     {
@@ -141,28 +136,28 @@ else
         var saved = await JS.InvokeAsync<string?>("localStorage.getItem", "repo-view");
         if (saved is "grid" or "list")
         {
-            gridView = saved == "grid";
+            State.GridView = saved == "grid";
             StateHasChanged();
         }
     }
 
     private async Task SetView(bool grid)
     {
-        gridView = grid;
+        State.GridView = grid;
         await JS.InvokeVoidAsync("localStorage.setItem", "repo-view", grid ? "grid" : "list");
     }
 
     private async Task NewSearch()
     {
-        if (string.IsNullOrWhiteSpace(query)) return;
-        lastQuery = query;
-        selectedPage = 1;
+        if (string.IsNullOrWhiteSpace(State.Query)) return;
+        State.LastQuery = State.Query;
+        State.Page = 1;
         await Load();
     }
 
     private async Task RunExample(string example)
     {
-        query = example;
+        State.Query = example;
         await NewSearch();
     }
 
@@ -179,14 +174,14 @@ else
 
     private async Task GoToPage(int target)
     {
-        selectedPage = target;
+        State.Page = target;
         await Load();
     }
 
     private async Task OnSortChanged()
     {
-        if (string.IsNullOrWhiteSpace(lastQuery)) return;
-        selectedPage = 1;
+        if (string.IsNullOrWhiteSpace(State.LastQuery)) return;
+        State.Page = 1;
         await Load();
     }
 
@@ -195,12 +190,12 @@ else
         loading = true; error = null;
         try
         {
-            results = await Api.SearchAsync(lastQuery, selectedPage, PerPage, sort, _cts.Token);
+            State.Results = await Api.SearchAsync(State.LastQuery, State.Page, PerPage, State.Sort, _cts.Token);
         }
         catch
         {
             error = "Errore durante la ricerca. Riprova.";
-            results = null;
+            State.Results = null;
         }
         finally { loading = false; }
     }
