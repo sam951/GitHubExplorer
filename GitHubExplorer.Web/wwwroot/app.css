@@ -526,3 +526,27 @@ h1:focus {
     border-color: var(--primary);
     color: var(--primary);
 }
+
+.results-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: .9rem;
+}
+
+.results-title {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.results-title .q {
+    color: var(--primary);
+}
+
+.fav-count {
+    color: var(--muted);
+    font-size: .9rem;
+    margin: -.5rem 0 1.1rem;
+}

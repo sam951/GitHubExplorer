@@ -4,7 +4,14 @@
 @inject ToastService Toasts
 @implements IDisposable
 
+<PageTitle>Preferiti · GitHub Explorer</PageTitle>
+
 <h1>Preferiti</h1>
+
+@if (favorites is { Count: > 0 })
+{
+    <p class="fav-count">@Preferiti(favorites.Count)</p>
+}
 
 @if (loading)
 {
@@ -34,7 +41,8 @@ else if (favorites is not null)
         @foreach (var fav in favorites)
         {
             <RepositoryCard Owner="@fav.Owner" Name="@fav.Name" HtmlUrl="@fav.HtmlUrl"
-                            Description="@fav.Description" Stars="fav.Stars">
+                            Description="@fav.Description" Stars="fav.Stars"
+                            Meta="@($"salvato il {fav.CreatedAt:d MMM yyyy}")">
                 <div class="fav-note">
                     <textarea @bind="noteDrafts[fav.Id]" placeholder="Nota personale…"></textarea>
                     <button @onclick="() => SaveNote(fav)" disabled="@(_busy.Contains(fav.Id))">Salva nota</button>
@@ -59,6 +67,8 @@ else if (favorites is not null)
     private ConfirmDialog confirmDialog = default!;
 
     protected override async Task OnInitializedAsync() => await Load();
+
+    private static string Preferiti(int n) => n == 1 ? "1 preferito" : $"{n} preferiti";
 
     private async Task Load()
     {

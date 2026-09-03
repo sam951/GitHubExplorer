@@ -4,11 +4,13 @@
 @inject ToastService Toasts
 @implements IDisposable
 
+<PageTitle>Cerca · GitHub Explorer</PageTitle>
+
 <h1>Cerca repository</h1>
 
 <div class="search-bar">
-    <input @bind="query" @bind:event="oninput" @onkeyup="OnKeyUp"
-           placeholder="Cerca su GitHub… (es. blazor)" />
+    <input @ref="searchInput" @bind="query" @bind:event="oninput" @onkeyup="OnKeyUp"
+           placeholder="Cerca su GitHub… (es. blazor)" aria-label="Cerca su GitHub" />
     <select @bind="sort" @bind:after="OnSortChanged" class="sort-select">
         <option value="">Più rilevanti</option>
         <option value="stars">Più stelle</option>
@@ -37,18 +39,21 @@ else if (results is not null)
     }
     else
     {
-        <div class="results-toolbar">
-            <button class="view-btn @(gridView ? null : "active")" @onclick="() => gridView = false" title="Lista">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
-                    <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
-                </svg>
-            </button>
-            <button class="view-btn @(gridView ? "active" : null)" @onclick="() => gridView = true" title="Griglia">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-                </svg>
-            </button>
+        <div class="results-head">
+            <h2 class="results-title">Risultati per «<span class="q">@lastQuery</span>»</h2>
+            <div class="results-toolbar">
+                <button class="view-btn @(gridView ? null : "active")" @onclick="() => gridView = false" title="Lista" aria-label="Vista lista" aria-pressed="@(!gridView)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
+                        <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
+                    </svg>
+                </button>
+                <button class="view-btn @(gridView ? "active" : null)" @onclick="() => gridView = true" title="Griglia" aria-label="Vista griglia" aria-pressed="@gridView">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <div class="@(gridView ? "results-grid" : "results-list")">
@@ -68,7 +73,7 @@ else if (results is not null)
 
         <div class="pager">
             <button @onclick="() => GoToPage(selectedPage - 1)" disabled="@(selectedPage <= 1 || loading)">← Prec</button>
-            <span class="pager-info">Pagina @selectedPage di @TotalPages · @results.TotalCount risultati</span>
+            <span class="pager-info">Pagina @selectedPage di @TotalPages · @Risultati(results.TotalCount)</span>
             <button @onclick="() => GoToPage(selectedPage + 1)" disabled="@(selectedPage >= TotalPages || loading)">Succ →</button>
         </div>
     }
@@ -103,6 +108,7 @@ else
     private int selectedPage = 1;
     private string sort = "";
     private bool gridView;
+    private ElementReference searchInput;
 
     private readonly CancellationTokenSource _cts = new();
     private readonly HashSet<long> _adding = new();
@@ -121,6 +127,12 @@ else
         catch { }
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await searchInput.FocusAsync();
+    }
+
     private async Task NewSearch()
     {
         if (string.IsNullOrWhiteSpace(query)) return;
@@ -134,6 +146,8 @@ else
         query = example;
         await NewSearch();
     }
+
+    private static string Risultati(int n) => n == 1 ? "1 risultato" : $"{n:N0} risultati";
 
     private async Task GoToPage(int target)
     {

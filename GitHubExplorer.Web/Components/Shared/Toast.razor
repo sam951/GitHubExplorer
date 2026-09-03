@@ -1,7 +1,7 @@
 ﻿@implements IDisposable
 @inject ToastService Toasts
 
-<div class="toast-container">
+<div class="toast-container" role="status" aria-live="polite" aria-atomic="true">
     @foreach (var t in Toasts.Toasts)
     {
         <div class="toast toast-@t.Level.ToString().ToLowerInvariant()"
