@@ -2,6 +2,7 @@
 @using GitHubExplorer.Web.Components.Shared
 @inject IGitHubExplorerApiClient Api
 @inject ToastService Toasts
+@inject IJSRuntime JS
 @implements IDisposable
 
 <PageTitle>Cerca · GitHub Explorer</PageTitle>
@@ -45,13 +46,13 @@ else if (results is not null)
         <div class="results-head">
             <h2 class="results-title">Risultati per «<span class="q">@lastQuery</span>»</h2>
             <div class="results-toolbar">
-                <button class="view-btn @(gridView ? null : "active")" @onclick="() => gridView = false" title="Lista" aria-label="Vista lista" aria-pressed="@(!gridView)">
+                <button class="view-btn @(gridView ? null : "active")" @onclick="() => SetView(false)" title="Lista" aria-label="Vista lista" aria-pressed="@(!gridView)">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
                         <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
                     </svg>
                 </button>
-                <button class="view-btn @(gridView ? "active" : null)" @onclick="() => gridView = true" title="Griglia" aria-label="Vista griglia" aria-pressed="@gridView">
+                <button class="view-btn @(gridView ? "active" : null)" @onclick="() => SetView(true)" title="Griglia" aria-label="Vista griglia" aria-pressed="@gridView">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
                     </svg>
@@ -133,8 +134,22 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-            await searchInput.FocusAsync();
+        if (!firstRender) return;
+
+        await searchInput.FocusAsync();
+
+        var saved = await JS.InvokeAsync<string?>("localStorage.getItem", "repo-view");
+        if (saved is "grid" or "list")
+        {
+            gridView = saved == "grid";
+            StateHasChanged();
+        }
+    }
+
+    private async Task SetView(bool grid)
+    {
+        gridView = grid;
+        await JS.InvokeVoidAsync("localStorage.setItem", "repo-view", grid ? "grid" : "list");
     }
 
     private async Task NewSearch()
